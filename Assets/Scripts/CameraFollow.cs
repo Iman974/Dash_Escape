@@ -2,7 +2,7 @@
 
 public class CameraFollow : MonoBehaviour {
 
-    [SerializeField] float smoothTime = 0.1f;
+    [SerializeField] float smoothTime = 0.25f;
 
     private Rigidbody2D player;
     private Vector3 startOffset;
