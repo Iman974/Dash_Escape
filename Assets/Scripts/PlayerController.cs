@@ -2,8 +2,9 @@
 
 public class PlayerController : MonoBehaviour {
 
-    [SerializeField] float dashSpeed = 1f;
-    [SerializeField] float dashDistance = 2f;
+    [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float dashSpeed = 0.1f;
+    [SerializeField] float dashDistance = 3f;
     [SerializeField] float circleCastOffset = 0.01f;
 
     private Rigidbody2D rb2D;
@@ -26,7 +27,10 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0)) {
             Dash();
         }
-        rb2D.MovePosition(Vector2.MoveTowards(rb2D.position, destination, velocity * Time.deltaTime));
+
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        rb2D.MovePosition(rb2D.position + (input * moveSpeed * Time.deltaTime));
+        //rb2D.MovePosition(Vector2.MoveTowards(rb2D.position, destination, velocity * Time.deltaTime));
     }
 
     private void FixedUpdate() {
@@ -35,16 +39,8 @@ public class PlayerController : MonoBehaviour {
                 return;
             }
 
-            Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.CircleCast(rb2D.position, colliderRadius, remainingMovement, remainingMovement.magnitude);
-            if (hit) {
-                destination = hit.centroid;
-                remainingMovement = rb2D.position - hit.centroid + remainingMovement;
-                remainingMovement = Vector2.Reflect(remainingMovement, hit.normal);
-            } else {
-                destination += remainingMovement;
-                doPositionCheck = false;
-            }
+            destination += remainingMovement;
+            doPositionCheck = false;
         }
     }
 
