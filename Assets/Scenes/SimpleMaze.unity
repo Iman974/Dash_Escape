@@ -990,7 +990,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cc0ec64c5b787f4ca00b72a9306688e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  smoothTime: 1
+  smoothTime: 0.25
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0

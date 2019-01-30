@@ -1,61 +1,69 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
+    [Header("Movement Settings")]
     [SerializeField] float moveSpeed = 5f;
-    [SerializeField] float dashSpeed = 0.1f;
-    [SerializeField] float dashDistance = 3f;
-    [SerializeField] float circleCastOffset = 0.01f;
+    [SerializeField] float jumpHeight = 3.5f;
+    [SerializeField] float timeToReachApex = 0.5f;
+    //[SerializeField] float accelerationAirborne = 0.06f;
+    [SerializeField] float accelerationGrounded = 0.02f;
+    [SerializeField] LayerMask collisionLayer = default;
 
-    private Rigidbody2D rb2D;
-    private Camera mainCamera;
-    private float velocity;
-    private Vector2 destination;
-    private bool doPositionCheck;
-    private float colliderRadius;
-    private Vector2 remainingMovement;
+    private Vector2 velocity;
+    private float jumpVelocity;
+    private float gravity;
+    private float smoothingVelocity;
+    private float height;
+    private bool isGrounded = true;
+    private float yBeforeJump;
+    private BoxCollider2D boxCollider;
+
+    public float PlayerInputX { get; set; }
 
     private void Start() {
-        rb2D = GetComponent<Rigidbody2D>();
-        mainCamera = Camera.main;
-        velocity = dashDistance / dashSpeed;
-        colliderRadius = GetComponent<CircleCollider2D>().radius * transform.localScale.x;
-        destination = rb2D.position;
+        PlayerInput.OnJumpKeyDownEvent += OnJumpKeyDown;
+        boxCollider = GetComponent<BoxCollider2D>();
+
+        gravity = -(2f * jumpHeight) / (timeToReachApex * timeToReachApex);
+        jumpVelocity = Mathf.Abs(gravity) * timeToReachApex;
     }
 
     private void Update() {
-        if (Input.GetMouseButtonDown(0)) {
-            Dash();
-        }
+        CalculateVelocity();
 
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        rb2D.MovePosition(rb2D.position + (input * moveSpeed * Time.deltaTime));
-        //rb2D.MovePosition(Vector2.MoveTowards(rb2D.position, destination, velocity * Time.deltaTime));
-    }
-
-    private void FixedUpdate() {
-        if (doPositionCheck) {
-            if (rb2D.position != destination) {
-                return;
+        Vector3 deltaMove = velocity * Time.deltaTime;
+        if (!isGrounded) {
+            height = transform.position.y + deltaMove.y - yBeforeJump;
+            Bounds bounds = boxCollider.bounds;
+            //bounds.center += Vector3.up * deltaMove.y;
+            if (height < 0f && Physics2D.OverlapBox(bounds.center, bounds.size, 0f, collisionLayer.value) != null) {
+                isGrounded = true;
             }
+        }
 
-            destination += remainingMovement;
-            doPositionCheck = false;
+        if (isGrounded) {
+            velocity.y = 0f;
+            //height = 0f;
+        }
+
+        transform.position += deltaMove;
+    }
+
+    private void CalculateVelocity() {
+        velocity.x = Mathf.SmoothDamp(velocity.x, PlayerInputX * moveSpeed, ref smoothingVelocity, accelerationGrounded);
+        velocity.y += gravity * Time.deltaTime;
+    }
+
+    private void OnJumpKeyDown() {
+        if (isGrounded) {
+            velocity.y = jumpVelocity;
+            isGrounded = false;
+            yBeforeJump = transform.position.y;
         }
     }
 
-    private void Dash() {
-        Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 dashDirection = (mousePosition - rb2D.position).normalized;
-        RaycastHit2D hit = Physics2D.CircleCast(rb2D.position - (dashDirection * circleCastOffset),
-            colliderRadius, dashDirection, dashDistance + circleCastOffset);
-        if (hit) {
-            destination = hit.centroid;
-            remainingMovement = rb2D.position - hit.centroid + (dashDirection * dashDistance);
-            remainingMovement = Vector2.Reflect(remainingMovement, hit.normal);
-            doPositionCheck = true;
-        } else {
-            destination = rb2D.position + (dashDirection * dashDistance);
-        }
+    private void OnDestroy() {
+        PlayerInput.OnJumpKeyDownEvent -= OnJumpKeyDown;
     }
 }
