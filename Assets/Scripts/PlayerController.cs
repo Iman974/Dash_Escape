@@ -1,69 +1,57 @@
-using UnityEngine;
+﻿using UnityEngine;
+using Slider = UnityEngine.UI.Slider;
 
+[RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour {
 
-    [Header("Movement Settings")]
     [SerializeField] float moveSpeed = 5f;
-    [SerializeField] float jumpHeight = 3.5f;
-    [SerializeField] float timeToReachApex = 0.5f;
-    //[SerializeField] float accelerationAirborne = 0.06f;
-    [SerializeField] float accelerationGrounded = 0.02f;
+    [SerializeField] int maxStamina = 50;
     [SerializeField] LayerMask collisionLayer = default;
+    [SerializeField] Slider staminaBar = null;
+    [SerializeField] float staminaDecreaseInterval = 0.06f;
 
-    private Vector2 velocity;
-    private float jumpVelocity;
-    private float gravity;
-    private float smoothingVelocity;
-    private float height;
-    private bool isGrounded = true;
-    private float yBeforeJump;
+    private int stamina;
+    private Rigidbody2D rb2D;
+    private bool isFlying;
     private BoxCollider2D boxCollider;
-
-    public float PlayerInputX { get; set; }
+    private SpriteRenderer spRenderer;
 
     private void Start() {
-        PlayerInput.OnJumpKeyDownEvent += OnJumpKeyDown;
+        rb2D = GetComponent<Rigidbody2D>();
         boxCollider = GetComponent<BoxCollider2D>();
-
-        gravity = -(2f * jumpHeight) / (timeToReachApex * timeToReachApex);
-        jumpVelocity = Mathf.Abs(gravity) * timeToReachApex;
+        stamina = maxStamina;
+        spRenderer = GetComponent<SpriteRenderer>();
+        staminaBar.maxValue = maxStamina;
     }
 
     private void Update() {
-        CalculateVelocity();
-
-        Vector3 deltaMove = velocity * Time.deltaTime;
-        if (!isGrounded) {
-            height = transform.position.y + deltaMove.y - yBeforeJump;
-            Bounds bounds = boxCollider.bounds;
-            //bounds.center += Vector3.up * deltaMove.y;
-            if (height < 0f && Physics2D.OverlapBox(bounds.center, bounds.size, 0f, collisionLayer.value) != null) {
-                isGrounded = true;
+        if (stamina >= 0) {
+            staminaBar.value = stamina;
+            if (Input.GetKey(KeyCode.Space)) {
+                stamina -= 1;
+                isFlying = true;
+            } else if (Input.GetKeyUp(KeyCode.Space)) {
+                isFlying = false;
+                CancelInvoke();
             }
         }
-
-        if (isGrounded) {
-            velocity.y = 0f;
-            //height = 0f;
+        if (stamina <= 0) {
+            isFlying = false;
         }
 
-        transform.position += deltaMove;
-    }
-
-    private void CalculateVelocity() {
-        velocity.x = Mathf.SmoothDamp(velocity.x, PlayerInputX * moveSpeed, ref smoothingVelocity, accelerationGrounded);
-        velocity.y += gravity * Time.deltaTime;
-    }
-
-    private void OnJumpKeyDown() {
-        if (isGrounded) {
-            velocity.y = jumpVelocity;
-            isGrounded = false;
-            yBeforeJump = transform.position.y;
+        if (!isFlying) {
+            Bounds bounds = boxCollider.bounds;
+            if (!Physics2D.OverlapBox(bounds.center, bounds.size, 0f, collisionLayer.value)) {
+                // Falling in lava
+                spRenderer.color = Color.red;
+            } else {
+                spRenderer.color = Color.cyan;
+            }
+        } else if (!IsInvoking()) {
+            InvokeRepeating("DecreaseStamina", 0f, staminaDecreaseInterval);
         }
-    }
 
-    private void OnDestroy() {
-        PlayerInput.OnJumpKeyDownEvent -= OnJumpKeyDown;
+        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        rb2D.MovePosition(rb2D.position + (input * moveSpeed * Time.deltaTime));
     }
 }
