@@ -257,6 +257,7 @@ MonoBehaviour:
   staminaBar: {fileID: 1864771929}
   staminaDecreaseSpeed: 0.4
   staminaIncreaseSpeed: 0.6
+  flightHeight: 0.5
 --- !u!212 &289954771
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -293,7 +294,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Sprite: {fileID: 21300000, guid: f1effef937e70eb4daa5b9ff7df13692, type: 3}
   m_Color: {r: 0.4669811, g: 0.89903456, b: 1, a: 1}
   m_FlipX: 0
@@ -954,6 +955,7 @@ GameObject:
   m_Component:
   - component: {fileID: 919505301}
   - component: {fileID: 919505300}
+  - component: {fileID: 919505299}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -961,6 +963,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &919505299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919505298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cc0ec64c5b787f4ca00b72a9306688e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  smoothTime: 0.25
 --- !u!20 &919505300
 Camera:
   m_ObjectHideFlags: 0

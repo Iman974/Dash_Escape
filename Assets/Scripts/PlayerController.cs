@@ -1,63 +1,67 @@
-﻿using UnityEngine;
-using Slider = UnityEngine.UI.Slider;
+using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Controller2D))]
 public class PlayerController : MonoBehaviour {
 
-    [SerializeField] float moveSpeed = 5f;
-    //[SerializeField] int maxStamina = 50;
-    [SerializeField] LayerMask collisionLayer = default;
-    [SerializeField] Slider staminaBar = null;
-    [SerializeField] float staminaDecreaseSpeed = 0.4f;
-    [SerializeField] float staminaIncreaseSpeed = 0.6f;
-    [SerializeField] float flightHeight = 0.5f;
-    //[SerializeField] float takeoffSpeed = 1f;
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float jumpHeight = 3.5f;
+    [SerializeField] private float timeToReachApex = 0.5f;
+    [SerializeField] private float jumpDelay = 0.05f;
+    [SerializeField] private float accelerationAirborne = 0.06f;
+    [SerializeField] private float accelerationGrounded = 0.02f;
 
-    private float stamina = 1f;
-    private Rigidbody2D rb2D;
-    private bool isFlying;
-    private BoxCollider2D boxCollider;
-    private SpriteRenderer spRenderer;
-    //private float timeSinceFlightStart;
-    //private Vector2 flightOffset;
+    private Vector2 velocity;
+    private Controller2D controller;
+    private float jumpVelocity;
+    private float gravity;
+    private float smoothingVelocity;
+    private bool jumpTrigger;
+    private float jumpTriggeredTime;
+
+    public float PlayerInputX { get; set; }
 
     private void Start() {
-        rb2D = GetComponent<Rigidbody2D>();
-        boxCollider = GetComponent<BoxCollider2D>();
-        spRenderer = GetComponent<SpriteRenderer>();
+        controller = GetComponent<Controller2D>();
+
+        //PlayerInput.OnJumpKeyDownEvent += OnJumpKeyDown;
+
+        gravity = -(2f * jumpHeight) / (timeToReachApex * timeToReachApex);
+        jumpVelocity = Mathf.Abs(gravity) * timeToReachApex;
     }
 
     private void Update() {
-        if (stamina >= 0) {
-            staminaBar.value = stamina;
-            if (Input.GetKeyDown(KeyCode.Space)) {
-                isFlying = true;
-                rb2D.position += Vector2.up * flightHeight;
-            } else if (Input.GetKeyUp(KeyCode.Space)) {
-                isFlying = false;
-                rb2D.position -= Vector2.up * flightHeight;
-                //timeSinceFlightStart = 0f;
-            }
-        }
-        if (stamina <= 0) {
-            isFlying = false;
+        if (!jumpTrigger || Time.time - jumpTriggeredTime >= jumpDelay) {
+            jumpTrigger = Input.GetKeyDown(KeyCode.Space);
+            jumpTriggeredTime = Time.time;
         }
 
-        if (!isFlying) {
-            stamina = Mathf.Min(stamina + (staminaIncreaseSpeed * Time.deltaTime), 1f);
-            Bounds bounds = boxCollider.bounds;
-            if (!Physics2D.OverlapBox(bounds.center, bounds.size, 0f, collisionLayer.value)) {
-                // Falling in lava
-                spRenderer.color = Color.red;
-            } else {
-                spRenderer.color = Color.cyan;
-            }
-        } else {
-            stamina = Mathf.Max(stamina - (staminaDecreaseSpeed * Time.deltaTime), 0f);
-            //timeSinceFlightStart = Mathf.Max(timeSinceFlightStart + (Time.deltaTime * takeoffSpeed), 1f);
+        if (controller.IsCollidingBelow || controller.IsCollidingAbove) {
+            velocity.y = 0f;
         }
 
-        Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        rb2D.MovePosition(rb2D.position + (input * moveSpeed * Time.deltaTime));
+        if (jumpTrigger && controller.IsCollidingBelow) {
+            velocity.y = jumpVelocity;
+        }
+
+        CalculateVelocity();
+
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void CalculateVelocity() {
+        float smoothTime = controller.IsCollidingBelow ? accelerationGrounded : accelerationAirborne;
+        velocity.x = Mathf.SmoothDamp(velocity.x, PlayerInputX * moveSpeed, ref smoothingVelocity, smoothTime);
+        velocity.y += gravity * Time.deltaTime;
+    }
+
+    //private void OnJumpKeyDown() {
+    //    if (controller.IsCollidingBelow) {
+    //        velocity.y = jumpVelocity;
+    //    }
+    //}
+
+    private void OnDestroy() {
+        //PlayerInput.OnJumpKeyDownEvent -= OnJumpKeyDown;
     }
 }
