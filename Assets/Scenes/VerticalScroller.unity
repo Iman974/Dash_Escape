@@ -683,11 +683,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
+  accelerationAirborne: 0.02
+  accelerationGrounded: 0.02
+  horizontalKnockback: 0.1
+  aboveFriction: 0.1
+  groundFriction: 0.5
   jumpHeight: 2.5
   timeToReachApex: 0.36
   jumpDelay: 0.05
-  accelerationAirborne: 0.02
-  accelerationGrounded: 0.02
+  baseDashImpulse: 30
+  maxDashForce: 25
+  dashSlowDown: 0.1
+  xInfluence: 0.1
+  yInfluence: 0
 --- !u!114 &1262709910
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,14 +5,13 @@ public class Controller2D : MonoBehaviour {
 
     [SerializeField] private RaycastController raycastController = null;
 
-    private CollisionsInfo collisions;
-    private RaycastController.RaycastOrigins raycastOrigins;
-    private LayerMask collisionLayer;
+    CollisionsInfo collisions;
+    RaycastController.RaycastOrigins raycastOrigins;
+    LayerMask collisionLayer;
 
-    private const int Down = -1, Left = -1;
+    const int Down = -1, Left = -1;
 
-    public bool IsCollidingBelow => collisions.below;
-    public bool IsCollidingAbove => collisions.above;
+    public CollisionsInfo Collisions => collisions;
 
     private void Start() {
         raycastController.Initialize(GetComponent<BoxCollider2D>());
