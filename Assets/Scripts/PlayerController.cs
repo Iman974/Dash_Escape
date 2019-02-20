@@ -5,11 +5,11 @@ public class PlayerController : MonoBehaviour {
 
     [Header("Movement Settings")]
     [SerializeField] float moveSpeed = 5f;
-    [SerializeField] float accelerationAirborne = 0.06f;
-    [SerializeField] float accelerationGrounded = 0.02f;
-    [SerializeField] float horizontalKnockback = 0.1f;
+    //[SerializeField] float accelerationAirborne = 0.06f;
+    //[SerializeField] float accelerationGrounded = 0.02f;
+    //[SerializeField] float horizontalKnockback = 0.1f;
     [SerializeField] [Range(0f, 1f)] float aboveFriction = 0.1f;
-    [SerializeField] float groundFriction = 0.02f;
+    [SerializeField] float groundFriction = 0.5f;
 
     [Header("Jump")]
     [SerializeField] float jumpHeight = 3.5f;
@@ -21,9 +21,9 @@ public class PlayerController : MonoBehaviour {
     //[SerializeField] float dashDistance = 2f;
     [SerializeField] float baseDashImpulse = 30f;
     [SerializeField] float maxDashForce = 25f;
-    [SerializeField] [Range(0f, 1f)] float dashSlowDown = 0.1f;
-    [SerializeField] [Range(0f, 1f)] float xInfluence = 0.1f;
-    [SerializeField] [Range(0f, 1f)] float yInfluence = 0f;
+    [SerializeField] [Range(0f, 1f)] float loadingMoveSpeed = 0.05f;
+    [SerializeField] Vector2 influence = new Vector2(0.1f, 0f);
+    [SerializeField] AnimationCurve dashToInputTransition = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
     Vector2 velocity;
     Controller2D controller;
@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour {
     float dashLoadingTime;
     float movementTimeScale = 1f;
     float oppositeFriction;
+    float dashTimer;
 
     public float PlayerInputX { get; set; }
 
@@ -68,29 +69,36 @@ public class PlayerController : MonoBehaviour {
             velocity.x *= (1f - aboveFriction);
         }
         if (collisions.right || collisions.left) {
-            velocity.x = -velocity.x * horizontalKnockback;
+            velocity.x = -velocity.x * collisions.horizontalCollider.bounciness;
         }
 
         if (jumpTrigger && collisions.below) {
             velocity.y = jumpVelocity;
         }
-
+        float deltaTime = Time.deltaTime;
+        dashTimer += deltaTime;
         CalculateVelocity(collisions.below);
 
-        controller.Move(velocity * Time.deltaTime * movementTimeScale);
+        controller.Move(velocity * deltaTime * movementTimeScale);
     }
 
     private void CalculateVelocity(bool isCollidingBelow) {
-        float smoothTime = isCollidingBelow ? accelerationGrounded : accelerationAirborne;
-        //velocity.x = Mathf.SmoothDamp(velocity.x, PlayerInputX * moveSpeed, ref smoothingVelocity, smoothTime);
+        //float smoothTime = isCollidingBelow ? accelerationGrounded : accelerationAirborne;
+        //Mathf.SmoothDamp(velocity.x, PlayerInputX * moveSpeed, ref smoothingVelocity, smoothTime)
+        float transitionState = 0f;
+        if (Mathf.Abs(PlayerInputX) > 0f) {
+            transitionState = dashToInputTransition.Evaluate(dashTimer);
+        }
+        velocity.x = Mathf.Lerp(velocity.x, PlayerInputX * moveSpeed, transitionState);
+        Debug.Log($"transition: {transitionState}, velocityX: {velocity.x}");
         velocity.y += gravity * Time.deltaTime;
 
         if (Input.GetMouseButton(0)) {
             dashLoadingTime += Time.deltaTime;
-            movementTimeScale = dashSlowDown;
+            movementTimeScale = loadingMoveSpeed;
         } else if (Input.GetMouseButtonUp(0)) {
-            velocity.x *= xInfluence;
-            velocity.y *= yInfluence;
+            dashTimer = 0f;
+            velocity *= influence;
             velocity += Dash(dashLoadingTime * baseDashImpulse);
             dashLoadingTime = 0f;
             movementTimeScale = 1f;
@@ -99,16 +107,8 @@ public class PlayerController : MonoBehaviour {
 
     private Vector2 Dash(float dashDistance) {
         Vector2 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 position = transform.position;
-        Vector2 dashDirection = (mousePosition - position).normalized;
-        //RaycastHit2D hit = Physics2D.BoxCast(position - (dashDirection * boxCastOffset),
-        //    boxColliderSize, 0f, dashDirection, this.dashDistance + boxCastOffset);
-        if (false) {
-            //destination = hit.centroid;
-            //remainingMovement = position - hit.centroid + (dashDirection * dashDistance);
-            //remainingMovement = Vector2.Reflect(remainingMovement, hit.normal);
-        } else {
-            return Vector2.ClampMagnitude(dashDirection * dashDistance, maxDashForce);
-        }
+        Vector2 dashDirection = (mousePosition - (Vector2)transform.position).normalized;
+
+        return Vector2.ClampMagnitude(dashDirection * dashDistance, maxDashForce);
     }
 }

@@ -401,7 +401,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 981901572}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: bc6b72c199ef5bc469c4a1bc34c4ccd3, type: 2}
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
@@ -683,9 +683,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
-  accelerationAirborne: 0.02
-  accelerationGrounded: 0.02
-  horizontalKnockback: 0.1
   aboveFriction: 0.1
   groundFriction: 0.5
   jumpHeight: 2.5
@@ -694,8 +691,31 @@ MonoBehaviour:
   baseDashImpulse: 30
   maxDashForce: 25
   dashSlowDown: 0.1
-  xInfluence: 0.1
-  yInfluence: 0
+  influence: {x: 0.1, y: 0}
+  dashToInputTransition:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 2
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.23002422
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &1262709910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -873,7 +893,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 1416516133}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: bc6b72c199ef5bc469c4a1bc34c4ccd3, type: 2}
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0

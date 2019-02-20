@@ -40,7 +40,7 @@ public class Controller2D : MonoBehaviour {
             rayOrigin += Vector2.up * (raycastController.HorizontalRaySpacing * i);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, collisionLayer);
 
-            Debug.DrawRay(rayOrigin, Vector2.right * directionX, Color.red);
+            //Debug.DrawRay(rayOrigin, Vector2.right * directionX, Color.red);
 
             if (hit) {
                 deltaMove.x = (hit.distance - RaycastController.SkinWidth) * directionX;
@@ -48,6 +48,7 @@ public class Controller2D : MonoBehaviour {
 
                 collisions.left = (int)directionX == Left;
                 collisions.right = !collisions.left;
+                collisions.horizontalCollider = hit.collider;
             }
         }
     }
@@ -61,7 +62,7 @@ public class Controller2D : MonoBehaviour {
             rayOrigin += Vector2.right * ((raycastController.VerticalRaySpacing * i) + deltaMove.x);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionLayer);
 
-            Debug.DrawRay(rayOrigin, Vector2.up * directionY, Color.blue);
+            //Debug.DrawRay(rayOrigin, Vector2.up * directionY, Color.blue);
 
             if (hit) {
                 deltaMove.y = (hit.distance - RaycastController.SkinWidth) * directionY;
@@ -76,10 +77,12 @@ public class Controller2D : MonoBehaviour {
     public struct CollisionsInfo {
         public bool above, below;
         public bool left, right;
+        public Collider2D horizontalCollider;
 
         public void Reset() {
             above = below = false;
             left = right = false;
+            horizontalCollider = null;
         }
     }
 }
