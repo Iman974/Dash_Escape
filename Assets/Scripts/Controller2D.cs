@@ -1,20 +1,19 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class Controller2D : MonoBehaviour {
 
     [SerializeField] private RaycastController raycastController = null;
 
-    CollisionsInfo collisions;
+    public CollisionsInfo collisions;
+
     RaycastController.RaycastOrigins raycastOrigins;
     LayerMask collisionLayer;
 
     const int Down = -1, Left = -1;
 
-    public CollisionsInfo Collisions => collisions;
-
     private void Start() {
-        raycastController.Initialize(GetComponent<BoxCollider2D>());
+        raycastController.Initialize(GetComponent<Collider2D>());
         raycastOrigins = raycastController.Origins;
         collisionLayer = raycastController.CollisionLayer;
     }
@@ -40,7 +39,7 @@ public class Controller2D : MonoBehaviour {
             rayOrigin += Vector2.up * (raycastController.HorizontalRaySpacing * i);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, collisionLayer);
 
-            //Debug.DrawRay(rayOrigin, Vector2.right * directionX, Color.red);
+            Debug.DrawRay(rayOrigin, Vector2.right * directionX, Color.red);
 
             if (hit) {
                 deltaMove.x = (hit.distance - RaycastController.SkinWidth) * directionX;
@@ -62,7 +61,7 @@ public class Controller2D : MonoBehaviour {
             rayOrigin += Vector2.right * ((raycastController.VerticalRaySpacing * i) + deltaMove.x);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionLayer);
 
-            //Debug.DrawRay(rayOrigin, Vector2.up * directionY, Color.blue);
+            Debug.DrawRay(rayOrigin, Vector2.up * directionY, Color.blue);
 
             if (hit) {
                 deltaMove.y = (hit.distance - RaycastController.SkinWidth) * directionY;

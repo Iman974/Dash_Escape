@@ -3,32 +3,32 @@
 [System.Serializable]
 public class RaycastController {
 
-    [SerializeField] private int horizontalRayCount = 4;
-    [SerializeField] private int verticalRayCount = 4;
-    [SerializeField] private LayerMask collisionLayer = new LayerMask();
+    [SerializeField] int horizontalRayCount = 4;
+    [SerializeField] int verticalRayCount = 4;
+    [SerializeField] LayerMask collisionLayer = new LayerMask();
 
-    private BoxCollider2D collider;
+    Collider2D collider;
 
     public const float SkinWidth = 0.015f;
-    private const int Down = -1, Left = -1;
-    private const int MinRayCount = 2;
-    private const int MaxRayCount = 30;
+    const int Down = -1, Left = -1;
+    const int MinRayCount = 2;
+    const int MaxRayCount = 30;
 
     public int HorizontalRayCount => horizontalRayCount;
     public int VerticalRayCount => verticalRayCount;
-    public float HorizontalRaySpacing { get; private set; }
-    public float VerticalRaySpacing { get; private set; }
+    public float HorizontalRaySpacing { get; set; }
+    public float VerticalRaySpacing { get; set; }
     public LayerMask CollisionLayer => collisionLayer;
-    public RaycastOrigins Origins { get; private set; }
+    public RaycastOrigins Origins { get; set; }
 
-    public void Initialize(BoxCollider2D boxCollider) {
-        collider = boxCollider;
+    public void Initialize(Collider2D collider) {
+        this.collider = collider;
         Origins = new RaycastOrigins();
 
         CalculateRaySpacing();
     }
 
-    private void CalculateRaySpacing() {
+    void CalculateRaySpacing() {
         Bounds bounds = collider.bounds;
         bounds.Expand(SkinWidth * -2f);
 

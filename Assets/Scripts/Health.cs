@@ -4,9 +4,9 @@ public class Health : MonoBehaviour {
 
     [SerializeField] int maxHealth = 100;
 
-    private int health;
+    int health;
 
-    private void Start() {
+    void Start() {
         health = maxHealth;
     }
 
