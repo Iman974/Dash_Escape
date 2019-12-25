@@ -3,7 +3,7 @@
 [RequireComponent(typeof(Rigidbody2D))]
 public class Controller2D : MonoBehaviour {
 
-    [SerializeField] private RaycastController raycastController = null;
+    [SerializeField] RaycastController raycastController = null;
 
     public CollisionsInfo collisions;
 
@@ -12,10 +12,11 @@ public class Controller2D : MonoBehaviour {
 
     const int Down = -1, Left = -1;
 
-    private void Start() {
+    void Start() {
         raycastController.Initialize(GetComponent<Collider2D>());
         raycastOrigins = raycastController.Origins;
         collisionLayer = raycastController.CollisionLayer;
+        dashVelocity = dashDistance / dashSpeed;
     }
 
     public void Move(Vector2 deltaMove) {
@@ -25,12 +26,46 @@ public class Controller2D : MonoBehaviour {
         if (!Mathf.Approximately(deltaMove.x, 0f)) {
             ProcessHorizontalCollisions(ref deltaMove);
         }
-        ProcessVerticalCollisions(ref deltaMove);
-
+        if (!Mathf.Approximately(deltaMove.y, 0f)) {
+            ProcessVerticalCollisions(ref deltaMove);
+        }
         transform.position += (Vector3)deltaMove;
     }
 
-    private void ProcessHorizontalCollisions(ref Vector2 deltaMove) {
+    [SerializeField] float dashDistance = 4f;
+    [SerializeField] float dashSpeed = 0.14f;
+
+    Vector2 dashDirection;
+    Vector2 dashStartPosition;
+    float remainingDashDistance;
+    float dashVelocity;
+
+    public void InitDash() {
+        dashStartPosition = transform.position;
+        remainingDashDistance = dashDistance;
+        dashDirection = (InputUtility.GetWorldMousePosition() - dashStartPosition).normalized;
+    }
+
+    public bool Dash() {
+        if ((dashStartPosition - (Vector2)transform.position).sqrMagnitude >= remainingDashDistance *
+        remainingDashDistance) {
+            return false;
+        }
+        if (collisions.right || collisions.left || collisions.above || collisions.below) {
+            Wall wall = collisions.hitCollider.GetComponent<Wall>();
+            Vector2 normal = collisions.normal;
+            if (wall.DashCollision == Wall.DashReaction.Bounce) {
+                dashDirection = Vector2.Reflect(dashDirection, normal);
+                remainingDashDistance -= (dashStartPosition - (Vector2)transform.position).magnitude;
+                dashStartPosition = transform.position;
+            } else if (wall.DashCollision == Wall.DashReaction.Stop) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void ProcessHorizontalCollisions(ref Vector2 deltaMove) {
         float directionX = Mathf.Sign(deltaMove.x);
         float rayLength = Mathf.Abs(deltaMove.x) + RaycastController.SkinWidth;
 
@@ -47,12 +82,13 @@ public class Controller2D : MonoBehaviour {
 
                 collisions.left = (int)directionX == Left;
                 collisions.right = !collisions.left;
-                collisions.horizontalCollider = hit.collider;
+                collisions.hitCollider = hit.collider;
+                collisions.normal = hit.normal;
             }
         }
     }
 
-    private void ProcessVerticalCollisions(ref Vector2 deltaMove) {
+    void ProcessVerticalCollisions(ref Vector2 deltaMove) {
         float directionY = Mathf.Sign(deltaMove.y);
         float rayLength = Mathf.Abs(deltaMove.y) + RaycastController.SkinWidth;
 
@@ -69,6 +105,8 @@ public class Controller2D : MonoBehaviour {
 
                 collisions.below = (int)directionY == Down;
                 collisions.above = !collisions.below;
+                collisions.hitCollider = hit.collider;
+                collisions.normal = hit.normal;
             }
         }
     }
@@ -76,12 +114,13 @@ public class Controller2D : MonoBehaviour {
     public struct CollisionsInfo {
         public bool above, below;
         public bool left, right;
-        public Collider2D horizontalCollider;
+        public Collider2D hitCollider;
+        public Vector2 normal;
 
         public void Reset() {
             above = below = false;
             left = right = false;
-            horizontalCollider = null;
+            hitCollider = null;
         }
     }
 }
