@@ -46,9 +46,8 @@ public class PlayerController : MonoBehaviour {
         dashStartPosition = transform.position;
         remainingDashDistance = dashDistance;
         dashDirection = (InputUtility.GetWorldMousePosition() - dashStartPosition).normalized;
-        controller2D.CastAllRays(dashDirection * minDashDistance);
-        var collisions = controller2D.collisions;
-        isDashing = !(collisions.hitX || collisions.hitY);
+        bool hit = controller2D.CastAllRays(dashDirection * minDashDistance);
+        isDashing = !hit;
     }
 
     void HandleDash() {
@@ -57,7 +56,7 @@ public class PlayerController : MonoBehaviour {
             isDashing = false;
         }
 
-        RaycastHit2D hit = controller2D.collisions.GetAnyHit();
+        RaycastHit2D hit = controller2D.collisions.latestHit;
         if (hit) {
             Wall wall = hit.collider.GetComponent<Wall>();
             if (wall.DashCollision == Wall.DashReaction.Bounce) {

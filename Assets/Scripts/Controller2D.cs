@@ -21,26 +21,29 @@ public class Controller2D : MonoBehaviour {
         collisions.Reset();
 
         if (!Mathf.Approximately(deltaMove.x, 0f)) {
-            CastHorizontalRays(deltaMove);
-            if (collisions.hitX) {
-                deltaMove.x = collisions.hitX.distance * (collisions.right ? 1f : -1f);
+            RaycastHit2D closestHit = CastHorizontalRays(deltaMove);
+            if (closestHit) {
+                deltaMove.x = closestHit.distance * (collisions.right ? 1f : -1f);
+                collisions.latestHit = closestHit;
             }
         }
         if (!Mathf.Approximately(deltaMove.y, 0f)) {
-            CastVerticalRays(deltaMove);
-            if (collisions.hitY) {
-                deltaMove.y = collisions.hitY.distance * (collisions.above ? 1f : -1f);
+            RaycastHit2D closestHit = CastVerticalRays(deltaMove);
+            if (closestHit) {
+                deltaMove.y = closestHit.distance * (collisions.above ? 1f : -1f);
+                collisions.latestHit = closestHit;
             }
         }
         transform.position += (Vector3)deltaMove;
     }
 
     // This is the exact same function as the one below -> use delegate to make only one function ?
-    void CastHorizontalRays(Vector2 deltaMove) {
+    RaycastHit2D CastHorizontalRays(Vector2 deltaMove) {
         float directionX = Mathf.Sign(deltaMove.x);
         float rayLength = Mathf.Abs(deltaMove.x) + RaycastController.SkinWidth;
         const int Left = -1;
 
+        RaycastHit2D closestHit = default;
         for (int i = 0; i < raycastController.HorizontalRayCount; i++) {
             Vector2 rayOrigin = (int)directionX == Left ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight;
             rayOrigin += Vector2.up * (raycastController.HorizontalRaySpacing * i);
@@ -51,19 +54,22 @@ public class Controller2D : MonoBehaviour {
             if (hit) {
                 rayLength = hit.distance;
                 hit.distance -= RaycastController.SkinWidth;
-                collisions.hitX = hit;
+                //collisions.hitX = hit;
+                closestHit = hit;
                 collisions.left = (int)directionX == Left;
                 collisions.right = !collisions.left;
             }
         }
+        return closestHit;
     }
 
     // This is the exact same function as the one above -> use delegate to make only one function ?
-    void CastVerticalRays(Vector2 deltaMove) {
+    RaycastHit2D CastVerticalRays(Vector2 deltaMove) {
         float directionY = Mathf.Sign(deltaMove.y);
         float rayLength = Mathf.Abs(deltaMove.y) + RaycastController.SkinWidth;
         const int Down = -1;
 
+        RaycastHit2D closestHit = default;
         for (int i = 0; i < raycastController.VerticalRayCount; i++) {
             Vector2 rayOrigin = (int)directionY == Down ? raycastOrigins.bottomLeft : raycastOrigins.topLeft;
             rayOrigin += Vector2.right * ((raycastController.VerticalRaySpacing * i) /*+ deltaMove.x*/);
@@ -74,37 +80,33 @@ public class Controller2D : MonoBehaviour {
             if (hit) {
                 rayLength = hit.distance;
                 hit.distance -= RaycastController.SkinWidth;
-                collisions.hitY = hit;
+                //collisions.hitY = hit;
+                closestHit = hit;
                 collisions.below = (int)directionY == Down;
                 collisions.above = !collisions.below;
             }
         }
+        return closestHit;
     }
 
-    public void CastAllRays(Vector2 deltaMove) {
-        CastHorizontalRays(deltaMove);
-        CastVerticalRays(deltaMove);
+    public bool CastAllRays(Vector2 deltaMove) {
+        RaycastHit2D hit = CastHorizontalRays(deltaMove);
+        if (hit) {
+            return true;
+        }
+        hit = CastVerticalRays(deltaMove);
+        return hit;
     }
 
     public struct Collisions {
         public bool above, below;
         public bool left, right;
-        public RaycastHit2D hitX;
-        public RaycastHit2D hitY;
+        public RaycastHit2D latestHit;
 
         public void Reset() {
             above = below = false;
             left = right = false;
-            hitX = default;
-            hitY = default;
-        }
-
-        // Returns the hit which touched a collider. If none returns hitY.
-        public RaycastHit2D GetAnyHit() {
-            if (hitX) {
-                return hitX;
-            }
-            return hitY;
+            latestHit = default;
         }
     }
 }
