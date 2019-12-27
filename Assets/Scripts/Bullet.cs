@@ -8,7 +8,7 @@ public class Bullet : MonoBehaviour {
         transform.position += transform.right * moveSpeed * Time.deltaTime;
     }
 
-    void OnCollisionEnter2D(Collision2D collision) {
+    void OnTriggerEnter2D(Collider2D otherCollider) {
         Destroy(gameObject);
     }
 }

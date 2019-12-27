@@ -58,7 +58,7 @@ public class PlayerController : MonoBehaviour {
 
         RaycastHit2D hit = controller2D.collisions.latestHit;
         if (hit) {
-            IDashable dashable = hit.collider.GetComponent<IDashable>();
+            IDashable dashable = hit.transform.GetComponentInParent<IDashable>();
             if (dashable.DashReaction == DashReaction.Bounce) {
                 dashDirection = Vector2.Reflect(dashDirection, hit.normal);
                 remainingDashDistance -= (dashStartPosition - (Vector2)transform.position).magnitude;
