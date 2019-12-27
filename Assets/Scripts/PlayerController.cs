@@ -58,12 +58,12 @@ public class PlayerController : MonoBehaviour {
 
         RaycastHit2D hit = controller2D.collisions.latestHit;
         if (hit) {
-            Wall wall = hit.collider.GetComponent<Wall>();
-            if (wall.DashCollision == Wall.DashReaction.Bounce) {
+            IDashable dashable = hit.collider.GetComponent<IDashable>();
+            if (dashable.DashReaction == DashReaction.Bounce) {
                 dashDirection = Vector2.Reflect(dashDirection, hit.normal);
                 remainingDashDistance -= (dashStartPosition - (Vector2)transform.position).magnitude;
                 dashStartPosition = transform.position;
-            } else if (wall.DashCollision == Wall.DashReaction.Stop) {
+            } else if (dashable.DashReaction == DashReaction.Stop) {
                 isDashing = false;
             }
         }

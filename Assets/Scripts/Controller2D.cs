@@ -37,7 +37,6 @@ public class Controller2D : MonoBehaviour {
         transform.position += (Vector3)deltaMove;
     }
 
-    // This is the exact same function as the one below -> use delegate to make only one function ?
     RaycastHit2D CastHorizontalRays(Vector2 deltaMove) {
         float directionX = Mathf.Sign(deltaMove.x);
         float rayLength = Mathf.Abs(deltaMove.x) + RaycastController.SkinWidth;
@@ -54,7 +53,6 @@ public class Controller2D : MonoBehaviour {
             if (hit) {
                 rayLength = hit.distance;
                 hit.distance -= RaycastController.SkinWidth;
-                //collisions.hitX = hit;
                 closestHit = hit;
                 collisions.left = (int)directionX == Left;
                 collisions.right = !collisions.left;
@@ -63,7 +61,6 @@ public class Controller2D : MonoBehaviour {
         return closestHit;
     }
 
-    // This is the exact same function as the one above -> use delegate to make only one function ?
     RaycastHit2D CastVerticalRays(Vector2 deltaMove) {
         float directionY = Mathf.Sign(deltaMove.y);
         float rayLength = Mathf.Abs(deltaMove.y) + RaycastController.SkinWidth;
@@ -72,7 +69,7 @@ public class Controller2D : MonoBehaviour {
         RaycastHit2D closestHit = default;
         for (int i = 0; i < raycastController.VerticalRayCount; i++) {
             Vector2 rayOrigin = (int)directionY == Down ? raycastOrigins.bottomLeft : raycastOrigins.topLeft;
-            rayOrigin += Vector2.right * ((raycastController.VerticalRaySpacing * i) /*+ deltaMove.x*/);
+            rayOrigin += Vector2.right * ((raycastController.VerticalRaySpacing * i) + deltaMove.x);
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, collisionLayer);
 
             Debug.DrawRay(rayOrigin, Vector2.up * directionY, Color.blue);
@@ -80,7 +77,6 @@ public class Controller2D : MonoBehaviour {
             if (hit) {
                 rayLength = hit.distance;
                 hit.distance -= RaycastController.SkinWidth;
-                //collisions.hitY = hit;
                 closestHit = hit;
                 collisions.below = (int)directionY == Down;
                 collisions.above = !collisions.below;

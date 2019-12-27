@@ -1,13 +1,8 @@
 ﻿using UnityEngine;
 
-public class Wall : MonoBehaviour {
-
-    public enum DashReaction {
-        Stop,
-        Bounce
-    }
+public class Wall : MonoBehaviour, IDashable {
 
     [SerializeField] DashReaction dashReaction = DashReaction.Stop;
 
-    public DashReaction DashCollision => dashReaction;
+    public DashReaction DashReaction => dashReaction;
 }
