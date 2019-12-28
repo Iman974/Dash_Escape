@@ -1,20 +1,24 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class Health : MonoBehaviour {
 
     [SerializeField] int maxHealth = 100;
+    [SerializeField] Slider healthBar = null;
 
-    int health;
+    int healthPoints;
 
     void Start() {
-        health = maxHealth;
+        healthPoints = maxHealth;
+        healthBar.value = maxHealth;
     }
 
     public void TakeDamage(int amount) {
-        health -= amount;
+        healthPoints -= amount;
+        healthBar.value = healthPoints / (float)maxHealth;
 
-        if (health <= 0) {
-            // Die
+        if (healthPoints <= 0) {
+            Debug.Log("You died!");
         }
     }
 }

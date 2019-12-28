@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] float dashDistance = 4f;
     [SerializeField] float dashDuration = 0.14f;
     [SerializeField] float minDashDistance = 0.05f;
+    [SerializeField] AnimationCurve dashCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
 
     Rigidbody2D rb2D;
     Controller2D controller2D;
@@ -17,6 +18,13 @@ public class PlayerController : MonoBehaviour {
     Vector2 dashStartPosition;
     float remainingDashDistance;
     float dashVelocity;
+    float dashStartTime;
+
+    public bool IsDashing => isDashing;
+
+    public int vsync = 0;
+    public int fps = 60;
+    public bool setSettings;
 
     void Start() {
         rb2D = GetComponent<Rigidbody2D>();
@@ -24,6 +32,10 @@ public class PlayerController : MonoBehaviour {
         mainCamera = Camera.main;
 
         dashVelocity = dashDistance / dashDuration;
+        if (setSettings) {
+            QualitySettings.vSyncCount = vsync;
+            Application.targetFrameRate = fps;
+        }
     }
 
     void Update() {
@@ -37,22 +49,31 @@ public class PlayerController : MonoBehaviour {
         if (!isDashing) {
             controller2D.Move(input * moveSpeed * Time.deltaTime);
         } else {
-            controller2D.Move(dashDirection * dashVelocity * Time.deltaTime);
+            float traveledDashSqrDistance = (dashStartPosition - (Vector2)transform.position).sqrMagnitude;
+            float t = traveledDashSqrDistance / (dashDistance * dashDistance);
+            controller2D.Move(dashCurve.Evaluate(t) * dashDirection * dashVelocity * Time.deltaTime);
             HandleDash();
         }
     }
 
     void InitDash() {
+        if (!Stamina.Instance.CanDoDash()) {
+            return;
+        }
+        Stamina.Instance.OnDashStart();
         dashStartPosition = transform.position;
         remainingDashDistance = dashDistance;
         dashDirection = (InputUtility.GetWorldMousePosition() - dashStartPosition).normalized;
         bool hit = controller2D.CastAllRays(dashDirection * minDashDistance);
-        isDashing = !hit;
+        if (!hit) {
+            isDashing = true;
+            dashStartTime = Time.time;
+        }
     }
 
     void HandleDash() {
-        if ((dashStartPosition - (Vector2)transform.position).sqrMagnitude >=
-                remainingDashDistance * remainingDashDistance) {
+        float traveledDashSqrDistance = (dashStartPosition - (Vector2)transform.position).sqrMagnitude;
+        if (traveledDashSqrDistance >= remainingDashDistance * remainingDashDistance) {
             isDashing = false;
         }
 

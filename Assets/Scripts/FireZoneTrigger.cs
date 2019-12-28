@@ -13,7 +13,7 @@ public class FireZoneTrigger : MonoBehaviour {
         shootingUnit.IsRotationActive = true;
     }
 
-    void OnTriggerExit2D(Collider2D collision) {
+    void OnTriggerExit2D(Collider2D otherCollider) {
         shootingUnit.IsRotationActive = false;
     }
 }
