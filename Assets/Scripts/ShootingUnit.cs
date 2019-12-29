@@ -13,7 +13,7 @@ public class ShootingUnit : MonoBehaviour, IDashable {
 
     Transform playerTransform;
     float angularVelocity;
-    float lastFireTime;
+    float lastFireTime = -9f;
 
     void Start() {
         playerTransform = GameObject.FindWithTag("Player").transform;

@@ -1481,8 +1481,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   raycastController:
-    horizontalRayCount: 4
-    verticalRayCount: 4
+    horizontalRayCount: 10
+    verticalRayCount: 10
     collisionLayer:
       serializedVersion: 2
       m_Bits: 3073
