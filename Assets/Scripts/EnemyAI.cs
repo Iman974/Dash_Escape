@@ -12,44 +12,35 @@ public class EnemyAI : MonoBehaviour {
     Health playerHealth;
     float timeInContact;
     bool hasChaseStartedOnce;
+    Controller2D controller;
 
     void Start() {
         player = GameObject.FindWithTag("Player").transform;
         playerHealth = player.GetComponent<Health>();
+        controller = GetComponent<Controller2D>();
     }
 
     void Update() {
         if (isChasingPlayer) {
-            transform.position = Vector2.MoveTowards(transform.position, player.position,
-                chaseSpeed * Time.deltaTime);
+            Vector2 deltaMove = (player.position - transform.position).normalized * chaseSpeed * Time.deltaTime;
+            controller.Move(deltaMove);
+
+            RaycastHit2D hit = controller.collisions.latestHit;
+            if (!hit) {
+                timeInContact = damageRepetitionRate;
+                return;
+            }
+            if (hit.transform.CompareTag("Player")) {
+                timeInContact += Time.deltaTime;
+                if (timeInContact >= damageRepetitionRate) {
+                    playerHealth.TakeDamage(damage);
+                    timeInContact = 0f;
+                }
+            }
         } else if (!hasChaseStartedOnce && (player.position - transform.position).sqrMagnitude <=
                   minChaseDistance * minChaseDistance) {
             isChasingPlayer = true;
             hasChaseStartedOnce = true;
-        }
-    }
-
-    void OnTriggerEnter2D(Collider2D otherCollider) {
-        if (otherCollider.gameObject.CompareTag("Player")) {
-            playerHealth.TakeDamage(damage);
-            isChasingPlayer = false;
-        }
-    }
-
-    void OnTriggerStay2D(Collider2D otherCollider) {
-        if (otherCollider.gameObject.CompareTag("Player")) {
-            timeInContact += Time.deltaTime;
-            if (timeInContact >= damageRepetitionRate) {
-                playerHealth.TakeDamage(damage);
-                timeInContact = 0f;
-            }
-        }
-    }
-
-    void OnTriggerExit2D(Collider2D otherCollider) {
-        if (otherCollider.gameObject.CompareTag("Player")) {
-            timeInContact = 0f;
-            isChasingPlayer = true;
         }
     }
 }

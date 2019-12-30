@@ -20,7 +20,7 @@ public class Bullet : MonoBehaviour {
     void Update() {
         bulletBehaviour.Update();
         Vector2 deltaMove = bulletBehaviour.GetDeltaMove(this);
-        Debug.DrawLine(rb2D.position, rb2D.position + deltaMove, Color.white, 2f);
+        //Debug.DrawLine(rb2D.position, rb2D.position + deltaMove, Color.white, 2f);
         rb2D.MovePosition(rb2D.position + deltaMove);
     }
 

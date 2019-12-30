@@ -20,14 +20,14 @@ public class Controller2D : MonoBehaviour {
         raycastController.UpdateRaycastOrigins();
         collisions.Reset();
 
-        if (!Mathf.Approximately(deltaMove.x, 0f)) {
+        if (Mathf.Abs(deltaMove.x) > 1e-8f) {
             RaycastHit2D closestHit = CastHorizontalRays(deltaMove);
             if (closestHit) {
                 deltaMove.x = closestHit.distance * (collisions.right ? 1f : -1f);
                 collisions.latestHit = closestHit;
             }
         }
-        if (!Mathf.Approximately(deltaMove.y, 0f)) {
+        if (Mathf.Abs(deltaMove.y) > 1e-8f) {
             RaycastHit2D closestHit = CastVerticalRays(deltaMove);
             if (closestHit) {
                 deltaMove.y = closestHit.distance * (collisions.above ? 1f : -1f);
